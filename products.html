@@ -31,6 +31,19 @@
                 <p>Gestiona el inventario de productos de tu tienda</p>
             </div>
             
+            <!-- Sección de estadísticas de ventas -->
+            <div class="sales-stats-section">
+                <div class="section-header">
+                    <h2>Estadísticas de Ventas</h2>
+                    <button id="refreshStatsButton" class="refresh-button">🔄 Actualizar</button>
+                </div>
+                <div id="salesStatsContent" class="sales-stats-content">
+                    <div class="loading-container">
+                        <p>Cargando estadísticas...</p>
+                    </div>
+                </div>
+            </div>
+            
             <div class="products-section">
                 <div class="section-header">
                     <h2>Productos</h2>
@@ -38,6 +51,29 @@
                         <button id="refreshProductsButton" class="refresh-button">🔄 Actualizar</button>
                         <button id="addProductButton" class="add-button">➕ Agregar Producto</button>
                     </div>
+                </div>
+                
+                <!-- Barra de búsqueda y filtros -->
+                <div class="search-filters-bar">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 Buscar productos..." class="search-input">
+                        <button id="clearSearchButton" class="clear-search-btn" style="display: none;">✕</button>
+                    </div>
+                    <div class="filters-box">
+                        <select id="filterCategoria" class="filter-select">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                        <select id="filterEstado" class="filter-select">
+                            <option value="">Todos los estados</option>
+                            <option value="disponible">Disponible</option>
+                            <option value="no disponible">No Disponible</option>
+                        </select>
+                        <button id="clearFiltersButton" class="clear-filters-btn">Limpiar Filtros</button>
+                    </div>
+                </div>
+                
+                <div class="products-info">
+                    <p id="productsCount">Mostrando <span id="productsCountNumber">0</span> productos</p>
                 </div>
                 
                 <div class="products-table-container">
@@ -60,6 +96,9 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <div id="noProductsMessage" class="no-products-message" style="display: none;">
+                    <p>No se encontraron productos que coincidan con los filtros.</p>
                 </div>
             </div>
         </main>

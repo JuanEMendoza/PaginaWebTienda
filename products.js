@@ -1,5 +1,6 @@
-// API endpoint
+// API endpoints
 const API_PRODUCTOS_URL = 'https://apijhon.onrender.com/api/productos';
+const API_PEDIDO_DETALLE_URL = 'https://apijhon.onrender.com/api/pedido_detalle';
 
 // Elementos del DOM
 let productsTableBody;
@@ -13,6 +14,21 @@ let userNameElements;
 let userRoleElement;
 let logoutButton;
 
+// Variables para búsqueda y filtrado
+let allProducts = [];
+let filteredProducts = [];
+let searchInput;
+let filterCategoria;
+let filterEstado;
+let clearSearchButton;
+let clearFiltersButton;
+let productsCountNumber;
+let noProductsMessage;
+
+// Variables para estadísticas
+let salesStatsContent;
+let refreshStatsButton;
+
 // Verificar sesión al cargar la página
 window.addEventListener('DOMContentLoaded', () => {
     // Inicializar elementos del DOM
@@ -25,6 +41,19 @@ window.addEventListener('DOMContentLoaded', () => {
     userRoleElement = document.getElementById('userRole');
     logoutButton = document.getElementById('logoutButton');
     
+    // Elementos de búsqueda y filtrado
+    searchInput = document.getElementById('searchInput');
+    filterCategoria = document.getElementById('filterCategoria');
+    filterEstado = document.getElementById('filterEstado');
+    clearSearchButton = document.getElementById('clearSearchButton');
+    clearFiltersButton = document.getElementById('clearFiltersButton');
+    productsCountNumber = document.getElementById('productsCountNumber');
+    noProductsMessage = document.getElementById('noProductsMessage');
+    
+    // Elementos de estadísticas
+    salesStatsContent = document.getElementById('salesStatsContent');
+    refreshStatsButton = document.getElementById('refreshStatsButton');
+    
     // Asegurar que los modales estén ocultos
     if (productModal) productModal.style.display = 'none';
     if (deleteProductModal) deleteProductModal.style.display = 'none';
@@ -34,6 +63,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     checkSession();
     loadProducts();
+    loadSalesStats();
 });
 
 // Verificar si hay una sesión válida
@@ -96,10 +126,54 @@ function initializeEventListeners() {
     if (refreshProductsButton) {
         refreshProductsButton.addEventListener('click', () => {
             loadProducts();
+            loadSalesStats(); // También recargar estadísticas
             refreshProductsButton.style.transform = 'rotate(360deg)';
             refreshProductsButton.style.transition = 'transform 0.5s ease';
             setTimeout(() => {
                 refreshProductsButton.style.transform = 'rotate(0deg)';
+            }, 500);
+        });
+    }
+    
+    // Event listeners para búsqueda y filtrado
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearchAndFilter);
+    }
+    
+    if (filterCategoria) {
+        filterCategoria.addEventListener('change', handleSearchAndFilter);
+    }
+    
+    if (filterEstado) {
+        filterEstado.addEventListener('change', handleSearchAndFilter);
+    }
+    
+    if (clearSearchButton) {
+        clearSearchButton.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearchButton.style.display = 'none';
+            handleSearchAndFilter();
+        });
+    }
+    
+    if (clearFiltersButton) {
+        clearFiltersButton.addEventListener('click', () => {
+            searchInput.value = '';
+            if (filterCategoria) filterCategoria.value = '';
+            if (filterEstado) filterEstado.value = '';
+            clearSearchButton.style.display = 'none';
+            handleSearchAndFilter();
+        });
+    }
+    
+    // Event listener para estadísticas
+    if (refreshStatsButton) {
+        refreshStatsButton.addEventListener('click', () => {
+            loadSalesStats();
+            refreshStatsButton.style.transform = 'rotate(360deg)';
+            refreshStatsButton.style.transition = 'transform 0.5s ease';
+            setTimeout(() => {
+                refreshStatsButton.style.transform = 'rotate(0deg)';
             }, 500);
         });
     }
@@ -179,8 +253,14 @@ async function loadProducts() {
         
         const productos = await response.json();
         
-        // Renderizar tabla de productos
-        renderProductsTable(productos);
+        // Guardar todos los productos
+        allProducts = productos;
+        
+        // Llenar filtro de categorías
+        populateCategoryFilter(productos);
+        
+        // Aplicar búsqueda y filtros
+        handleSearchAndFilter();
         
     } catch (error) {
         console.error('Error al cargar productos:', error);
@@ -194,12 +274,86 @@ async function loadProducts() {
     }
 }
 
+// Llenar filtro de categorías
+function populateCategoryFilter(productos) {
+    if (!filterCategoria) return;
+    
+    // Obtener categorías únicas
+    const categorias = [...new Set(productos.map(p => p.categoria).filter(c => c))].sort();
+    
+    // Limpiar opciones existentes (excepto "Todas")
+    filterCategoria.innerHTML = '<option value="">Todas las categorías</option>';
+    
+    // Añadir categorías
+    categorias.forEach(categoria => {
+        const option = document.createElement('option');
+        option.value = categoria;
+        option.textContent = categoria;
+        filterCategoria.appendChild(option);
+    });
+}
+
+// Manejar búsqueda y filtrado
+function handleSearchAndFilter() {
+    if (!allProducts || allProducts.length === 0) return;
+    
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const categoriaFilter = filterCategoria ? filterCategoria.value : '';
+    const estadoFilter = filterEstado ? filterEstado.value : '';
+    
+    // Mostrar/ocultar botón de limpiar búsqueda
+    if (clearSearchButton) {
+        clearSearchButton.style.display = searchTerm ? 'block' : 'none';
+    }
+    
+    // Filtrar productos
+    filteredProducts = allProducts.filter(producto => {
+        // Filtro de búsqueda (nombre, descripción, categoría)
+        const matchesSearch = !searchTerm || 
+            (producto.nombre && producto.nombre.toLowerCase().includes(searchTerm)) ||
+            (producto.descripcion && producto.descripcion.toLowerCase().includes(searchTerm)) ||
+            (producto.categoria && producto.categoria.toLowerCase().includes(searchTerm));
+        
+        // Filtro de categoría
+        const matchesCategoria = !categoriaFilter || producto.categoria === categoriaFilter;
+        
+        // Filtro de estado
+        const matchesEstado = !estadoFilter || producto.estado === estadoFilter;
+        
+        return matchesSearch && matchesCategoria && matchesEstado;
+    });
+    
+    // Renderizar tabla con productos filtrados
+    renderProductsTable(filteredProducts);
+    
+    // Actualizar contador
+    updateProductsCount();
+}
+
+// Actualizar contador de productos
+function updateProductsCount() {
+    if (productsCountNumber) {
+        productsCountNumber.textContent = filteredProducts.length;
+    }
+    
+    // Mostrar/ocultar mensaje de no productos
+    if (noProductsMessage) {
+        noProductsMessage.style.display = filteredProducts.length === 0 ? 'block' : 'none';
+    }
+    
+    // Ocultar tabla si no hay productos
+    const tableContainer = document.querySelector('.products-table-container');
+    if (tableContainer) {
+        tableContainer.style.display = filteredProducts.length === 0 ? 'none' : 'block';
+    }
+}
+
 // Renderizar tabla de productos
 function renderProductsTable(productos) {
     if (!productsTableBody) return;
     
-    if (productos.length === 0) {
-        productsTableBody.innerHTML = '<tr><td colspan="8" class="loading-row">No hay productos registrados</td></tr>';
+    if (!productos || productos.length === 0) {
+        productsTableBody.innerHTML = '<tr><td colspan="8" class="loading-row">No hay productos para mostrar</td></tr>';
         return;
     }
     
@@ -409,6 +563,8 @@ async function handleProductSubmit(e) {
         // Cerrar modal y recargar productos
         closeProductModal();
         loadProducts();
+        // Recargar estadísticas después de agregar/editar producto
+        loadSalesStats();
         showSuccessMessage(`Producto ${isEditingProduct ? 'actualizado' : 'agregado'} correctamente`);
         
     } catch (error) {
@@ -471,6 +627,8 @@ async function handleDeleteProduct() {
         // Cerrar modal y recargar productos
         closeDeleteProductModal();
         loadProducts();
+        // Recargar estadísticas después de eliminar producto
+        loadSalesStats();
         showSuccessMessage('Producto eliminado correctamente');
         
     } catch (error) {
@@ -507,4 +665,196 @@ function showSuccessMessage(message) {
 setInterval(() => {
     checkSession();
 }, 60 * 1000);
+
+// ==================== FUNCIONES DE ESTADÍSTICAS DE VENTAS ====================
+
+// Cargar estadísticas de ventas
+async function loadSalesStats() {
+    if (!salesStatsContent) return;
+    
+    try {
+        salesStatsContent.innerHTML = '<div class="loading-container"><p>Cargando estadísticas...</p></div>';
+        
+        // Obtener todos los productos
+        const productosResponse = await fetch(API_PRODUCTOS_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        
+        if (!productosResponse.ok) {
+            throw new Error('Error al cargar productos');
+        }
+        
+        const productos = await productosResponse.json();
+        
+        // Obtener todos los detalles de pedidos
+        const detallesResponse = await fetch(API_PEDIDO_DETALLE_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        
+        if (!detallesResponse.ok) {
+            throw new Error('Error al cargar detalles de pedidos');
+        }
+        
+        const detallesPedidos = await detallesResponse.json();
+        
+        // Calcular estadísticas por producto
+        const estadisticas = calculateProductStats(productos, detallesPedidos);
+        
+        // Renderizar estadísticas
+        renderSalesStats(estadisticas);
+        
+    } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+        salesStatsContent.innerHTML = `
+            <div class="error-message" style="display: block; margin: 20px;">
+                Error al cargar estadísticas. Por favor, intenta nuevamente.
+            </div>
+        `;
+    }
+}
+
+// Calcular estadísticas por producto
+function calculateProductStats(productos, detallesPedidos) {
+    // Crear mapa de productos por ID
+    const productosMap = {};
+    productos.forEach(p => {
+        productosMap[p.id_producto] = p;
+    });
+    
+    // Calcular estadísticas
+    const statsMap = {};
+    
+    detallesPedidos.forEach(detalle => {
+        const productId = detalle.id_producto;
+        
+        if (!statsMap[productId]) {
+            statsMap[productId] = {
+                id_producto: productId,
+                nombre: productosMap[productId]?.nombre || 'Producto desconocido',
+                cantidad_vendida: 0,
+                total_ingresos: 0,
+                pedidosSet: new Set() // Set para contar pedidos únicos por producto
+            };
+        }
+        
+        statsMap[productId].cantidad_vendida += detalle.cantidad || 0;
+        statsMap[productId].total_ingresos += detalle.subtotal || 0;
+        statsMap[productId].pedidosSet.add(detalle.id_pedido);
+    });
+    
+    // Convertir a array y calcular número de pedidos
+    const estadisticas = Object.values(statsMap).map(stat => ({
+        id_producto: stat.id_producto,
+        nombre: stat.nombre,
+        cantidad_vendida: stat.cantidad_vendida,
+        total_ingresos: stat.total_ingresos,
+        numero_pedidos: stat.pedidosSet.size
+    }));
+    
+    // Ordenar por cantidad vendida (descendente)
+    estadisticas.sort((a, b) => b.cantidad_vendida - a.cantidad_vendida);
+    
+    return estadisticas;
+}
+
+// Renderizar estadísticas de ventas
+function renderSalesStats(estadisticas) {
+    if (!salesStatsContent) return;
+    
+    if (estadisticas.length === 0) {
+        salesStatsContent.innerHTML = `
+            <div class="no-stats-message">
+                <p>No hay estadísticas de ventas disponibles.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calcular totales generales
+    const totalVendido = estadisticas.reduce((sum, stat) => sum + stat.cantidad_vendida, 0);
+    const totalIngresos = estadisticas.reduce((sum, stat) => sum + stat.total_ingresos, 0);
+    const totalProductos = estadisticas.length;
+    
+    // Crear HTML de estadísticas
+    let html = `
+        <div class="stats-summary">
+            <div class="stat-summary-card">
+                <div class="stat-summary-icon">📦</div>
+                <div class="stat-summary-content">
+                    <h3>${totalVendido}</h3>
+                    <p>Unidades Vendidas</p>
+                </div>
+            </div>
+            <div class="stat-summary-card">
+                <div class="stat-summary-icon">💰</div>
+                <div class="stat-summary-content">
+                    <h3>${new Intl.NumberFormat('es-CO', {
+                        style: 'currency',
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(totalIngresos)}</h3>
+                    <p>Ingresos Totales</p>
+                </div>
+            </div>
+            <div class="stat-summary-card">
+                <div class="stat-summary-icon">🛒</div>
+                <div class="stat-summary-content">
+                    <h3>${estadisticas.length}</h3>
+                    <p>Productos Vendidos</p>
+                </div>
+            </div>
+        </div>
+        <div class="product-stats-table-container">
+            <h3>Productos Más Vendidos</h3>
+            <table class="product-stats-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad Vendida</th>
+                        <th>Ingresos</th>
+                        <th>Pedidos</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    // Mostrar top 10 productos
+    const topProducts = estadisticas.slice(0, 10);
+    topProducts.forEach(stat => {
+        html += `
+            <tr>
+                <td>${stat.nombre}</td>
+                <td>${stat.cantidad_vendida}</td>
+                <td>${new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(stat.total_ingresos)}</td>
+                <td>${stat.numero_pedidos}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    salesStatsContent.innerHTML = html;
+}
 
