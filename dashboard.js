@@ -1,6 +1,10 @@
 // API endpoints
 const API_URL = 'https://apijhon.onrender.com/api/usuarios';
 const API_PEDIDOS_URL = 'https://apijhon.onrender.com/api/pedidos';
+const API_METODOS_PAGO_URL = 'https://apijhon.onrender.com/api/metodos_pago';
+
+// Mapa de métodos de pago
+let metodosPagoMap = {};
 
 // Elementos del DOM
 let userNameElements;
@@ -577,9 +581,41 @@ window.openOrdersModal = async function(userId, userName) {
     if (ordersError) ordersError.style.display = 'none';
     if (ordersEmpty) ordersEmpty.style.display = 'none';
     
-    // Cargar pedidos
+    // Cargar métodos de pago primero, luego los pedidos
+    await loadMetodosPago();
     await loadUserOrders(userId);
 };
+
+// Cargar métodos de pago desde la API
+async function loadMetodosPago() {
+    try {
+        const response = await fetch(API_METODOS_PAGO_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error al cargar métodos de pago: ${response.status}`);
+        }
+        
+        const metodosPago = await response.json();
+        
+        // Crear mapa de métodos de pago
+        metodosPagoMap = {};
+        metodosPago.forEach(metodo => {
+            metodosPagoMap[metodo.id_metodo] = metodo.nombre;
+        });
+        
+    } catch (error) {
+        console.error('Error al cargar métodos de pago:', error);
+        // Continuar sin métodos de pago, se mostrará el ID
+    }
+}
 
 // Cerrar modal de pedidos
 function closeOrdersModal() {
@@ -690,6 +726,11 @@ async function loadUserOrders(userId) {
                 // Mapear estados a clases CSS
                 const estadoClass = getEstadoClass(pedido.estado);
                 
+                // Obtener nombre del método de pago
+                const metodoPagoNombre = pedido.id_metodo && metodosPagoMap[pedido.id_metodo] 
+                    ? metodosPagoMap[pedido.id_metodo] 
+                    : (pedido.id_metodo ? `ID: ${pedido.id_metodo}` : 'N/A');
+                
                 return `
                     <tr>
                         <td>#${pedido.id_pedido}</td>
@@ -697,7 +738,7 @@ async function loadUserOrders(userId) {
                         <td>${totalFormateado}</td>
                         <td><span class="status-badge ${estadoClass}">${pedido.estado || 'N/A'}</span></td>
                         <td>${pedido.direccion_envio || 'N/A'}</td>
-                        <td>${pedido.id_metodo || 'N/A'}</td>
+                        <td>${metodoPagoNombre}</td>
                     </tr>
                 `;
             }).join('');
