@@ -57,6 +57,11 @@ app.get('/dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
+// Ruta para productos
+app.get('/products.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'products.html'));
+});
+
 // Manejar rutas no encontradas - redirigir a index
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'index.html'));

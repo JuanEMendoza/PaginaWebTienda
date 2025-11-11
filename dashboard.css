@@ -174,12 +174,58 @@ body {
 }
 
 .users-section,
-.products-section {
+.products-section,
+.quick-actions-section {
     background: var(--card-background);
     border-radius: 12px;
     box-shadow: var(--shadow);
     padding: 24px;
     margin-bottom: 32px;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.quick-action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    background: var(--background-color);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+    background: var(--card-background);
+}
+
+.quick-action-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.quick-action-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.quick-action-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin: 0;
 }
 
 .section-header {

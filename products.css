@@ -1,0 +1,39 @@
+/* Estilos específicos para la página de productos */
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.back-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.back-link:hover {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary-dark);
+}
+
+/* Responsive para productos */
+@media (max-width: 768px) {
+    .header-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .back-link {
+        font-size: 12px;
+    }
+}
+
