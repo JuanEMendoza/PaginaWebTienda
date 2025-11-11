@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: pagina-web-tienda-admin
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+    autoDeploy: true
+

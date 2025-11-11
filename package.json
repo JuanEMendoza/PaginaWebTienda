@@ -1,0 +1,26 @@
+{
+  "name": "pagina-web-tienda-admin",
+  "version": "1.0.0",
+  "description": "Sistema de login y panel de administración para tienda web",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "admin",
+    "login",
+    "dashboard",
+    "tienda"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
+
