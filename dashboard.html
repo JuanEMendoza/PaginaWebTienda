@@ -78,11 +78,12 @@
                                 <th>Rol</th>
                                 <th>Estado</th>
                                 <th>Fecha Registro</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
                             <tr>
-                                <td colspan="7" class="loading-row">Cargando usuarios...</td>
+                                <td colspan="8" class="loading-row">Cargando usuarios...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -91,7 +92,82 @@
         </main>
     </div>
     
+    <!-- Modal para editar usuario -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Usuario</h2>
+                <button class="modal-close" id="closeEditModal">&times;</button>
+            </div>
+            <form id="editUserForm" class="modal-form">
+                <input type="hidden" id="editUserId" name="id_usuario">
+                
+                <div class="form-group">
+                    <label for="editNombre">Nombre</label>
+                    <input type="text" id="editNombre" name="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCorreo">Correo Electrónico</label>
+                    <input type="email" id="editCorreo" name="correo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editTelefono">Teléfono</label>
+                    <input type="text" id="editTelefono" name="telefono">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editDireccion">Dirección</label>
+                    <input type="text" id="editDireccion" name="direccion">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editRol">Rol</label>
+                    <select id="editRol" name="rol" required>
+                        <option value="cliente">Cliente</option>
+                        <option value="administrador">Administrador</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editEstado">Estado</label>
+                    <select id="editEstado" name="estado" required>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+                
+                <div id="editErrorMessage" class="error-message"></div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelEdit">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de confirmación para eliminar -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Confirmar Eliminación</h2>
+                <button class="modal-close" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar al usuario <strong id="deleteUserName"></strong>?</p>
+                <p class="warning-text">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelDelete">Cancelar</button>
+                <button type="button" class="btn-delete-modal" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
