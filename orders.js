@@ -53,68 +53,66 @@ window.addEventListener('DOMContentLoaded', () => {
     // Inicializar event listeners
     initializeEventListeners();
     
+    // Cargar información del usuario (sin protección de login)
     checkSession();
     loadOrders();
 });
 
-// Verificar si hay una sesión válida
+// Verificar si hay una sesión válida - DESHABILITADO
 function checkSession() {
-    const adminSession = localStorage.getItem('adminSession');
-    
-    if (!adminSession) {
-        // No hay sesión, redirigir al login
-        window.location.href = 'index.html';
-        return;
-    }
-    
+    // Protección de login deshabilitada - la página es accesible sin login
+    // Intentar cargar información del usuario si existe sesión
     try {
-        const session = JSON.parse(adminSession);
-        
-        // Verificar que la sesión no haya expirado (24 horas)
-        // Compatible con ambas estructuras: timestamp o expiresAt
-        if (session.timestamp && Date.now() - session.timestamp > 24 * 60 * 60 * 1000) {
-            // Sesión expirada
-            localStorage.removeItem('adminSession');
-            window.location.href = 'index.html';
-            return;
+        const adminSession = localStorage.getItem('adminSession');
+        if (adminSession) {
+            const session = JSON.parse(adminSession);
+            
+            // Mostrar información del usuario si existe
+            const nombre = session.nombre || (session.user && session.user.nombre) || 'Administrador';
+            const rol = session.rol || (session.user && session.user.rol) || 'Admin';
+            
+            if (userNameElements.length > 0) {
+                userNameElements.forEach(el => {
+                    el.textContent = nombre;
+                });
+            }
+            
+            if (userRoleElement) {
+                userRoleElement.textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
+            }
+        } else {
+            // Si no hay sesión, mostrar valores por defecto
+            if (userNameElements.length > 0) {
+                userNameElements.forEach(el => {
+                    el.textContent = 'Administrador';
+                });
+            }
+            
+            if (userRoleElement) {
+                userRoleElement.textContent = 'Admin';
+            }
         }
-        
-        // Verificar expiresAt si existe
-        if (session.expiresAt && Date.now() > session.expiresAt) {
-            localStorage.removeItem('adminSession');
-            window.location.href = 'index.html';
-            return;
-        }
-        
-        // Mostrar información del usuario
-        // Compatible con ambas estructuras: session.nombre o session.user.nombre
-        const nombre = session.nombre || (session.user && session.user.nombre) || 'Administrador';
-        const rol = session.rol || (session.user && session.user.rol) || 'Admin';
-        
+    } catch (error) {
+        console.error('Error al cargar información de usuario:', error);
+        // Mostrar valores por defecto en caso de error
         if (userNameElements.length > 0) {
             userNameElements.forEach(el => {
-                el.textContent = nombre;
+                el.textContent = 'Administrador';
             });
         }
         
         if (userRoleElement) {
-            userRoleElement.textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
+            userRoleElement.textContent = 'Admin';
         }
-        
-    } catch (error) {
-        console.error('Error al verificar sesión:', error);
-        localStorage.removeItem('adminSession');
-        window.location.href = 'index.html';
     }
 }
 
 // Inicializar event listeners
 function initializeEventListeners() {
-    // Logout
+    // Logout - Redirigir al dashboard
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
-            localStorage.removeItem('adminSession');
-            window.location.href = 'index.html';
+            window.location.href = 'dashboard.html';
         });
     }
     
@@ -761,8 +759,8 @@ function showSuccessMessage(message) {
     }, 3000);
 }
 
-// Verificar sesión periódicamente (cada minuto)
-setInterval(() => {
-    checkSession();
-}, 60 * 1000);
+// Verificar sesión periódicamente (cada minuto) - DESHABILITADO
+// setInterval(() => {
+//     checkSession();
+// }, 60 * 1000);
 
