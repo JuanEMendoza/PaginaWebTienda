@@ -166,6 +166,49 @@
         </div>
     </div>
     
+    <!-- Modal para historial de pedidos -->
+    <div id="ordersModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Historial de Pedidos - <span id="ordersUserName"></span></h2>
+                <button class="modal-close" id="closeOrdersModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="ordersLoading" class="loading-container">
+                    <p>Cargando pedidos...</p>
+                </div>
+                <div id="ordersContent" style="display: none;">
+                    <div id="ordersStats" class="orders-stats"></div>
+                    <div class="orders-table-container">
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Pedido</th>
+                                    <th>Fecha</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Dirección Envío</th>
+                                    <th>Método Pago</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="ordersEmpty" class="orders-empty" style="display: none;">
+                        <p>Este usuario no tiene pedidos registrados.</p>
+                    </div>
+                </div>
+                <div id="ordersError" class="orders-error" style="display: none;">
+                    <p>Error al cargar los pedidos. Por favor, intenta nuevamente.</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="closeOrdersBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="dashboard.js"></script>
 </body>
 </html>

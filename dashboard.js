@@ -1,5 +1,6 @@
-// API endpoint
+// API endpoints
 const API_URL = 'https://apijhon.onrender.com/api/usuarios';
+const API_PEDIDOS_URL = 'https://apijhon.onrender.com/api/pedidos';
 
 // Elementos del DOM
 let userNameElements;
@@ -16,6 +17,7 @@ let adminsCountElement;
 let currentUserId = null;
 let editModal;
 let deleteModal;
+let ordersModal;
 let editUserForm;
 let editErrorMessage;
 
@@ -35,12 +37,14 @@ window.addEventListener('DOMContentLoaded', () => {
     // Inicializar modales
     editModal = document.getElementById('editModal');
     deleteModal = document.getElementById('deleteModal');
+    ordersModal = document.getElementById('ordersModal');
     editUserForm = document.getElementById('editUserForm');
     editErrorMessage = document.getElementById('editErrorMessage');
     
     // Asegurar que los modales estén ocultos
     if (editModal) editModal.style.display = 'none';
     if (deleteModal) deleteModal.style.display = 'none';
+    if (ordersModal) ordersModal.style.display = 'none';
     
     // Inicializar event listeners
     initializeEventListeners();
@@ -170,13 +174,16 @@ function renderUsersTable(usuarios) {
                 <td><span class="status-badge ${usuario.estado}">${usuario.estado}</span></td>
                 <td>${fechaFormateada}</td>
                 <td class="actions-cell">
+                    <button class="btn-action btn-orders" onclick="openOrdersModal(${usuario.id_usuario}, '${usuario.nombre.replace(/'/g, "\\'")}')" title="Ver Pedidos">
+                        🛒 Pedidos
+                    </button>
                     <button class="btn-action btn-edit" onclick="openEditModal(${usuario.id_usuario})" title="Editar">
                         ✏️ Editar
                     </button>
                     <button class="btn-action btn-toggle" onclick="toggleUserStatus(${usuario.id_usuario}, '${usuario.estado}')" title="${estadoAccion}">
                         ${estadoIcono} ${estadoAccion}
                     </button>
-                    <button class="btn-action btn-delete" onclick="openDeleteModal(${usuario.id_usuario}, '${usuario.nombre}')" title="Eliminar">
+                    <button class="btn-action btn-delete" onclick="openDeleteModal(${usuario.id_usuario}, '${usuario.nombre.replace(/'/g, "\\'")}')" title="Eliminar">
                         🗑️ Eliminar
                     </button>
                 </td>
@@ -260,6 +267,27 @@ function initializeEventListeners() {
         if (confirmDeleteBtn) {
             confirmDeleteBtn.addEventListener('click', handleDeleteUser);
         }
+    }
+    
+    // Event listeners para el modal de pedidos
+    if (ordersModal) {
+        const closeOrdersModalBtn = document.getElementById('closeOrdersModal');
+        const closeOrdersBtn = document.getElementById('closeOrdersBtn');
+        
+        if (closeOrdersModalBtn) {
+            closeOrdersModalBtn.addEventListener('click', closeOrdersModal);
+        }
+        
+        if (closeOrdersBtn) {
+            closeOrdersBtn.addEventListener('click', closeOrdersModal);
+        }
+        
+        // Cerrar modal al hacer click fuera
+        ordersModal.addEventListener('click', (e) => {
+            if (e.target === ordersModal) {
+                closeOrdersModal();
+            }
+        });
     }
 }
 
@@ -519,6 +547,199 @@ function showSuccessMessage(message) {
             document.body.removeChild(successMsg);
         }, 300);
     }, 3000);
+}
+
+// ==================== FUNCIONES DE GESTIÓN DE PEDIDOS ====================
+
+// Abrir modal de pedidos
+window.openOrdersModal = async function(userId, userName) {
+    if (!ordersModal) return;
+    
+    // Mostrar nombre del usuario
+    const ordersUserName = document.getElementById('ordersUserName');
+    if (ordersUserName) {
+        ordersUserName.textContent = userName;
+    }
+    
+    // Mostrar modal
+    ordersModal.style.display = 'flex';
+    
+    // Mostrar loading y ocultar contenido
+    const ordersLoading = document.getElementById('ordersLoading');
+    const ordersContent = document.getElementById('ordersContent');
+    const ordersError = document.getElementById('ordersError');
+    const ordersEmpty = document.getElementById('ordersEmpty');
+    
+    if (ordersLoading) ordersLoading.style.display = 'block';
+    if (ordersContent) ordersContent.style.display = 'none';
+    if (ordersError) ordersError.style.display = 'none';
+    if (ordersEmpty) ordersEmpty.style.display = 'none';
+    
+    // Cargar pedidos
+    await loadUserOrders(userId);
+};
+
+// Cerrar modal de pedidos
+function closeOrdersModal() {
+    if (ordersModal) {
+        ordersModal.style.display = 'none';
+    }
+}
+
+// Cargar pedidos de un usuario
+async function loadUserOrders(userId) {
+    const ordersLoading = document.getElementById('ordersLoading');
+    const ordersContent = document.getElementById('ordersContent');
+    const ordersError = document.getElementById('ordersError');
+    const ordersEmpty = document.getElementById('ordersEmpty');
+    const ordersTableBody = document.getElementById('ordersTableBody');
+    const ordersStats = document.getElementById('ordersStats');
+    
+    try {
+        // Obtener todos los pedidos
+        const response = await fetch(API_PEDIDOS_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error en la petición: ${response.status}`);
+        }
+        
+        const allPedidos = await response.json();
+        
+        // Filtrar pedidos por id_usuario (asegurar comparación correcta de tipos)
+        const userIdNum = parseInt(userId);
+        const userPedidos = allPedidos.filter(pedido => parseInt(pedido.id_usuario) === userIdNum);
+        
+        // Ocultar loading
+        if (ordersLoading) ordersLoading.style.display = 'none';
+        
+        if (userPedidos.length === 0) {
+            // No hay pedidos
+            if (ordersContent) ordersContent.style.display = 'block';
+            if (ordersEmpty) ordersEmpty.style.display = 'block';
+            if (ordersTableBody) ordersTableBody.innerHTML = '';
+            if (ordersStats) ordersStats.innerHTML = '';
+            // Ocultar tabla cuando no hay pedidos
+            const ordersTableContainer = document.querySelector('.orders-table-container');
+            if (ordersTableContainer) ordersTableContainer.style.display = 'none';
+            return;
+        }
+        
+        // Mostrar estadísticas
+        if (ordersStats) {
+            const totalPedidos = userPedidos.length;
+            const totalMonto = userPedidos.reduce((sum, pedido) => sum + (pedido.total || 0), 0);
+            const pedidosCompletados = userPedidos.filter(p => p.estado === 'completado' || p.estado === 'entregado').length;
+            const pedidosPendientes = userPedidos.filter(p => p.estado === 'en preparación' || p.estado === 'pendiente').length;
+            
+            ordersStats.innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">Total Pedidos:</span>
+                    <span class="stat-value">${totalPedidos}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Monto Total:</span>
+                    <span class="stat-value">${new Intl.NumberFormat('es-CO', {
+                        style: 'currency',
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(totalMonto)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Completados:</span>
+                    <span class="stat-value">${pedidosCompletados}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Pendientes:</span>
+                    <span class="stat-value">${pedidosPendientes}</span>
+                </div>
+            `;
+        }
+        
+        // Renderizar tabla de pedidos
+        if (ordersTableBody) {
+            ordersTableBody.innerHTML = userPedidos.map(pedido => {
+                const fechaPedido = new Date(pedido.fecha_pedido);
+                const fechaFormateada = fechaPedido.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Formatear total como moneda
+                const total = pedido.total || 0;
+                const totalFormateado = new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(total);
+                
+                // Mapear estados a clases CSS
+                const estadoClass = getEstadoClass(pedido.estado);
+                
+                return `
+                    <tr>
+                        <td>#${pedido.id_pedido}</td>
+                        <td>${fechaFormateada}</td>
+                        <td>${totalFormateado}</td>
+                        <td><span class="status-badge ${estadoClass}">${pedido.estado || 'N/A'}</span></td>
+                        <td>${pedido.direccion_envio || 'N/A'}</td>
+                        <td>${pedido.id_metodo || 'N/A'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Mostrar contenido
+        if (ordersContent) ordersContent.style.display = 'block';
+        if (ordersEmpty) ordersEmpty.style.display = 'none';
+        // Mostrar tabla cuando hay pedidos
+        const ordersTableContainer = document.querySelector('.orders-table-container');
+        if (ordersTableContainer) ordersTableContainer.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error al cargar pedidos:', error);
+        
+        // Ocultar loading
+        if (ordersLoading) ordersLoading.style.display = 'none';
+        
+        // Mostrar error
+        if (ordersError) {
+            ordersError.style.display = 'block';
+            ordersError.querySelector('p').textContent = 
+                'Error al cargar los pedidos. Por favor, intenta nuevamente.';
+        }
+        
+        if (ordersContent) ordersContent.style.display = 'none';
+    }
+}
+
+// Obtener clase CSS para el estado del pedido
+function getEstadoClass(estado) {
+    if (!estado) return 'inactivo';
+    
+    const estadoLower = estado.toLowerCase();
+    
+    if (estadoLower.includes('completado') || estadoLower.includes('entregado')) {
+        return 'activo';
+    } else if (estadoLower.includes('preparación') || estadoLower.includes('pendiente')) {
+        return 'preparacion';
+    } else if (estadoLower.includes('cancelado')) {
+        return 'inactivo';
+    }
+    
+    return 'preparacion';
 }
 
 
