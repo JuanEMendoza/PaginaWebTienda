@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pedidos - Panel de Administración</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="orders.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="dashboard.html" class="back-link">← Volver al Dashboard</a>
+                    <h1>Gestión de Pedidos</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info">
+                        <span id="userName">Administrador</span>
+                        <span class="user-role" id="userRole">Admin</span>
+                    </div>
+                    <button id="logoutButton" class="logout-button">Cerrar Sesión</button>
+                </div>
+            </div>
+        </header>
+        
+        <main class="dashboard-main">
+            <div class="welcome-section">
+                <h2>Pedidos Realizados</h2>
+                <p>Gestiona los pedidos de tus clientes</p>
+            </div>
+            
+            <div class="orders-section">
+                <div class="section-header">
+                    <h2>📦 Pedidos</h2>
+                    <div class="section-header-actions">
+                        <button id="refreshOrdersButton" class="refresh-button">🔄 Actualizar</button>
+                    </div>
+                </div>
+                
+                <!-- Filtros de pedidos -->
+                <div class="orders-filters-bar">
+                    <div class="filter-item">
+                        <label for="filterEstadoPedido">Estado:</label>
+                        <select id="filterEstadoPedido" class="filter-select">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en preparación">En Preparación</option>
+                            <option value="en preparacion">En Preparacion</option>
+                            <option value="enviado">Enviado</option>
+                            <option value="entregado">Entregado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="searchOrderInput">Buscar:</label>
+                        <input type="text" id="searchOrderInput" class="search-input" placeholder="Buscar por ID de pedido o usuario...">
+                    </div>
+                    <button id="clearOrderFiltersButton" class="clear-filters-btn">🗑️ Limpiar Filtros</button>
+                </div>
+                
+                <div class="orders-info">
+                    <p id="ordersCount">Mostrando <span id="ordersCountNumber">0</span> pedidos</p>
+                </div>
+                
+                <div class="orders-table-container">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>ID Pedido</th>
+                                <th>ID Usuario</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Dirección</th>
+                                <th>Método Pago</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr>
+                                <td colspan="8" class="loading-row">Cargando pedidos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="noOrdersMessage" class="no-orders-message" style="display: none;">
+                    <p>No se encontraron pedidos que coincidan con los filtros.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modal para ver detalles del pedido -->
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="orderDetailsModalTitle">Detalles del Pedido</h2>
+                <button class="modal-close" id="closeOrderDetailsModal">&times;</button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <div class="loading-container">
+                    <p>Cargando detalles...</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="closeOrderDetailsBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para cambiar estado del pedido -->
+    <div id="changeStatusModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Cambiar Estado del Pedido</h2>
+                <button class="modal-close" id="closeChangeStatusModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Pedido #<strong id="changeStatusOrderId"></strong></p>
+                <div class="form-group">
+                    <label for="newStatus">Nuevo Estado:</label>
+                    <select id="newStatus" class="filter-select">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en preparación">En Preparación</option>
+                        <option value="en preparacion">En Preparacion</option>
+                        <option value="enviado">Enviado</option>
+                        <option value="entregado">Entregado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div id="changeStatusErrorMessage" class="error-message"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelChangeStatus">Cancelar</button>
+                <button type="button" class="btn-save" id="confirmChangeStatus">Cambiar Estado</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="orders.js"></script>
+</body>
+</html>
+

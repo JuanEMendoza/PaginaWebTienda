@@ -62,6 +62,11 @@ app.get('/products.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'products.html'));
 });
 
+// Ruta para pedidos
+app.get('/orders.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'orders.html'));
+});
+
 // Manejar rutas no encontradas - redirigir a index
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'index.html'));
