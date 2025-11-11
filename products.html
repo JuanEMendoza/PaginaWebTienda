@@ -6,6 +6,7 @@
     <title>Gestión de Productos - Panel de Administración</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="products.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -34,7 +35,7 @@
             <!-- Sección de estadísticas de ventas -->
             <div class="sales-stats-section">
                 <div class="section-header">
-                    <h2>Estadísticas de Ventas</h2>
+                    <h2>📊 Estadísticas de Ventas</h2>
                     <button id="refreshStatsButton" class="refresh-button">🔄 Actualizar</button>
                 </div>
                 <div id="salesStatsContent" class="sales-stats-content">
@@ -42,11 +43,22 @@
                         <p>Cargando estadísticas...</p>
                     </div>
                 </div>
+                <!-- Contenedor para gráficas -->
+                <div class="charts-container" id="chartsContainer" style="display: none;">
+                    <div class="chart-wrapper">
+                        <h3>Productos Más Vendidos (Cantidad)</h3>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Ingresos por Producto</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
             </div>
             
             <div class="products-section">
                 <div class="section-header">
-                    <h2>Productos</h2>
+                    <h2>📦 Productos</h2>
                     <div class="section-header-actions">
                         <button id="refreshProductsButton" class="refresh-button">🔄 Actualizar</button>
                         <button id="addProductButton" class="add-button">➕ Agregar Producto</button>
@@ -55,20 +67,29 @@
                 
                 <!-- Barra de búsqueda y filtros -->
                 <div class="search-filters-bar">
+                    <div class="search-header">
+                        <h3>🔍 Buscar y Filtrar Productos</h3>
+                    </div>
                     <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="🔍 Buscar productos..." class="search-input">
-                        <button id="clearSearchButton" class="clear-search-btn" style="display: none;">✕</button>
+                        <input type="text" id="searchInput" placeholder="🔍 Buscar por nombre, descripción o categoría..." class="search-input">
+                        <button id="clearSearchButton" class="clear-search-btn" style="display: none;" title="Limpiar búsqueda">✕</button>
                     </div>
                     <div class="filters-box">
-                        <select id="filterCategoria" class="filter-select">
-                            <option value="">Todas las categorías</option>
-                        </select>
-                        <select id="filterEstado" class="filter-select">
-                            <option value="">Todos los estados</option>
-                            <option value="disponible">Disponible</option>
-                            <option value="no disponible">No Disponible</option>
-                        </select>
-                        <button id="clearFiltersButton" class="clear-filters-btn">Limpiar Filtros</button>
+                        <div class="filter-item">
+                            <label for="filterCategoria">Categoría:</label>
+                            <select id="filterCategoria" class="filter-select">
+                                <option value="">Todas las categorías</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label for="filterEstado">Estado:</label>
+                            <select id="filterEstado" class="filter-select">
+                                <option value="">Todos los estados</option>
+                                <option value="disponible">Disponible</option>
+                                <option value="no disponible">No Disponible</option>
+                            </select>
+                        </div>
+                        <button id="clearFiltersButton" class="clear-filters-btn">🗑️ Limpiar Filtros</button>
                     </div>
                 </div>
                 

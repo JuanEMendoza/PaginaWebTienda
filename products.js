@@ -28,6 +28,8 @@ let noProductsMessage;
 // Variables para estadísticas
 let salesStatsContent;
 let refreshStatsButton;
+let salesChart = null;
+let revenueChart = null;
 
 // Verificar sesión al cargar la página
 window.addEventListener('DOMContentLoaded', () => {
@@ -779,6 +781,8 @@ function renderSalesStats(estadisticas) {
                 <p>No hay estadísticas de ventas disponibles.</p>
             </div>
         `;
+        const chartsContainer = document.getElementById('chartsContainer');
+        if (chartsContainer) chartsContainer.style.display = 'none';
         return;
     }
     
@@ -818,10 +822,11 @@ function renderSalesStats(estadisticas) {
             </div>
         </div>
         <div class="product-stats-table-container">
-            <h3>Productos Más Vendidos</h3>
+            <h3>Top 10 Productos Más Vendidos</h3>
             <table class="product-stats-table">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Producto</th>
                         <th>Cantidad Vendida</th>
                         <th>Ingresos</th>
@@ -833,9 +838,10 @@ function renderSalesStats(estadisticas) {
     
     // Mostrar top 10 productos
     const topProducts = estadisticas.slice(0, 10);
-    topProducts.forEach(stat => {
+    topProducts.forEach((stat, index) => {
         html += `
             <tr>
+                <td><strong>${index + 1}</strong></td>
                 <td>${stat.nombre}</td>
                 <td>${stat.cantidad_vendida}</td>
                 <td>${new Intl.NumberFormat('es-CO', {
@@ -856,5 +862,165 @@ function renderSalesStats(estadisticas) {
     `;
     
     salesStatsContent.innerHTML = html;
+    
+    // Mostrar y crear gráficas después de un pequeño delay para asegurar que el DOM esté listo
+    const chartsContainer = document.getElementById('chartsContainer');
+    if (chartsContainer) {
+        chartsContainer.style.display = 'grid';
+        // Pequeño delay para asegurar que el DOM esté completamente renderizado
+        setTimeout(() => {
+            createCharts(estadisticas);
+        }, 100);
+    }
+}
+
+// Crear gráficas de productos más vendidos
+function createCharts(estadisticas) {
+    // Tomar top 8 productos para las gráficas
+    const topProducts = estadisticas.slice(0, 8);
+    
+    // Preparar datos
+    const productNames = topProducts.map(p => p.nombre.length > 20 ? p.nombre.substring(0, 20) + '...' : p.nombre);
+    const quantities = topProducts.map(p => p.cantidad_vendida);
+    const revenues = topProducts.map(p => p.total_ingresos);
+    
+    // Destruir gráficas existentes si existen
+    if (salesChart) {
+        salesChart.destroy();
+    }
+    if (revenueChart) {
+        revenueChart.destroy();
+    }
+    
+    // Gráfica de cantidad vendida
+    const salesCtx = document.getElementById('salesChart');
+    if (salesCtx) {
+        salesChart = new Chart(salesCtx, {
+            type: 'bar',
+            data: {
+                labels: productNames,
+                datasets: [{
+                    label: 'Cantidad Vendida',
+                    data: quantities,
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Cantidad: ${context.parsed.y} unidades`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        },
+                        title: {
+                            display: true,
+                            text: 'Unidades Vendidas'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Productos'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Gráfica de ingresos
+    const revenueCtx = document.getElementById('revenueChart');
+    if (revenueCtx) {
+        revenueChart = new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: productNames,
+                datasets: [{
+                    label: 'Ingresos (COP)',
+                    data: revenues,
+                    backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Ingresos: ${new Intl.NumberFormat('es-CO', {
+                                    style: 'currency',
+                                    currency: 'COP',
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                }).format(context.parsed.y)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                } else if (value >= 1000) {
+                                    return (value / 1000).toFixed(1) + 'K';
+                                }
+                                return value;
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Ingresos (COP)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Productos'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+    }
 }
 

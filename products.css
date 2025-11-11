@@ -30,9 +30,22 @@
     flex-direction: column;
     gap: 16px;
     margin-bottom: 20px;
-    padding: 16px;
-    background: var(--background-color);
-    border-radius: 8px;
+    padding: 20px;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+.search-header {
+    margin-bottom: 8px;
+}
+
+.search-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
 }
 
 .search-box {
@@ -81,13 +94,27 @@
 
 .filters-box {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-item label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
 }
 
 .filter-select {
-    flex: 1;
+    width: 100%;
     min-width: 150px;
     padding: 10px 12px;
     border: 2px solid var(--border-color);
@@ -263,6 +290,37 @@
     margin: 0;
 }
 
+/* Gráficas */
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.chart-wrapper {
+    background: var(--background-color);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-wrapper h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 350px !important;
+    max-height: 400px;
+}
+
 /* Responsive para productos */
 @media (max-width: 768px) {
     .header-left {
@@ -282,6 +340,10 @@
     .filters-box {
         flex-direction: column;
         align-items: stretch;
+    }
+    
+    .filter-item {
+        min-width: auto;
     }
     
     .filter-select {
@@ -304,6 +366,14 @@
     .product-stats-table th,
     .product-stats-table td {
         padding: 8px;
+    }
+    
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-wrapper {
+        padding: 16px;
     }
 }
 
