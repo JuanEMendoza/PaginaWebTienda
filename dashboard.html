@@ -89,6 +89,38 @@
                     </table>
                 </div>
             </div>
+            
+            <div class="products-section">
+                <div class="section-header">
+                    <h2>Catálogo de Productos</h2>
+                    <div class="section-header-actions">
+                        <button id="refreshProductsButton" class="refresh-button">🔄 Actualizar</button>
+                        <button id="addProductButton" class="add-button">➕ Agregar Producto</button>
+                    </div>
+                </div>
+                
+                <div class="products-table-container">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Categoría</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <tr>
+                                <td colspan="8" class="loading-row">Cargando productos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
     
@@ -205,6 +237,86 @@
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-cancel" id="closeOrdersBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para agregar/editar producto -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="productModalTitle">Agregar Producto</h2>
+                <button class="modal-close" id="closeProductModal">&times;</button>
+            </div>
+            <form id="productForm" class="modal-form">
+                <input type="hidden" id="productId" name="id_producto">
+                
+                <div class="form-group">
+                    <label for="productNombre">Nombre *</label>
+                    <input type="text" id="productNombre" name="nombre" required placeholder="Nombre del producto">
+                </div>
+                
+                <div class="form-group">
+                    <label for="productDescripcion">Descripción *</label>
+                    <textarea id="productDescripcion" name="descripcion" required rows="3" placeholder="Descripción del producto"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productPrecio">Precio *</label>
+                        <input type="number" id="productPrecio" name="precio" required min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productStock">Stock *</label>
+                        <input type="number" id="productStock" name="stock" required min="0" placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productCategoria">Categoría *</label>
+                        <input type="text" id="productCategoria" name="categoria" required placeholder="Ej: Ropa, Calzado, Accesorios">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productEstado">Estado *</label>
+                        <select id="productEstado" name="estado" required>
+                            <option value="disponible">Disponible</option>
+                            <option value="no disponible">No Disponible</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productImagen">Imagen (URL o nombre de archivo)</label>
+                    <input type="text" id="productImagen" name="imagen" placeholder="imagen.jpg">
+                </div>
+                
+                <div id="productErrorMessage" class="error-message"></div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelProduct">Cancelar</button>
+                    <button type="submit" class="btn-save" id="saveProduct">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de confirmación para eliminar producto -->
+    <div id="deleteProductModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Confirmar Eliminación</h2>
+                <button class="modal-close" id="closeDeleteProductModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el producto <strong id="deleteProductName"></strong>?</p>
+                <p class="warning-text">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelDeleteProduct">Cancelar</button>
+                <button type="button" class="btn-delete-modal" id="confirmDeleteProduct">Eliminar</button>
             </div>
         </div>
     </div>

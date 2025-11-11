@@ -173,11 +173,13 @@ body {
     color: var(--text-secondary);
 }
 
-.users-section {
+.users-section,
+.products-section {
     background: var(--card-background);
     border-radius: 12px;
     box-shadow: var(--shadow);
     padding: 24px;
+    margin-bottom: 32px;
 }
 
 .section-header {
@@ -187,13 +189,20 @@ body {
     margin-bottom: 20px;
 }
 
+.section-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
 .section-header h2 {
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
 }
 
-.refresh-button {
+.refresh-button,
+.add-button {
     padding: 8px 16px;
     background: var(--primary-color);
     color: white;
@@ -208,6 +217,16 @@ body {
     gap: 8px;
 }
 
+.add-button {
+    background: var(--success-color);
+}
+
+.add-button:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
 .refresh-button:hover {
     background: var(--primary-dark);
     transform: translateY(-1px);
@@ -218,20 +237,24 @@ body {
     transform: translateY(0);
 }
 
-.users-table-container {
+.users-table-container,
+.products-table-container {
     overflow-x: auto;
 }
 
-.users-table {
+.users-table,
+.products-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.users-table thead {
+.users-table thead,
+.products-table thead {
     background: var(--background-color);
 }
 
-.users-table th {
+.users-table th,
+.products-table th {
     padding: 12px;
     text-align: left;
     font-weight: 600;
@@ -240,18 +263,21 @@ body {
     border-bottom: 2px solid var(--border-color);
 }
 
-.users-table td {
+.users-table td,
+.products-table td {
     padding: 12px;
     font-size: 14px;
     color: var(--text-secondary);
     border-bottom: 1px solid var(--border-color);
 }
 
-.users-table tbody tr:hover {
+.users-table tbody tr:hover,
+.products-table tbody tr:hover {
     background: var(--background-color);
 }
 
-.users-table tbody tr:last-child td {
+.users-table tbody tr:last-child td,
+.products-table tbody tr:last-child td {
     border-bottom: none;
 }
 
@@ -492,7 +518,8 @@ body {
 }
 
 .modal-form input,
-.modal-form select {
+.modal-form select,
+.modal-form textarea {
     width: 100%;
     padding: 10px 12px;
     border: 2px solid var(--border-color);
@@ -501,13 +528,26 @@ body {
     color: var(--text-primary);
     background: var(--card-background);
     transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.modal-form textarea {
+    resize: vertical;
+    min-height: 80px;
 }
 
 .modal-form input:focus,
-.modal-form select:focus {
+.modal-form select:focus,
+.modal-form textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
 .modal-form .error-message {
@@ -718,9 +758,28 @@ body {
         align-items: flex-start;
     }
     
-    .refresh-button {
+    .section-header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .refresh-button,
+    .add-button {
         width: 100%;
         justify-content: center;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .products-table {
+        font-size: 12px;
+    }
+    
+    .products-table th,
+    .products-table td {
+        padding: 8px;
     }
     
     .users-table {
