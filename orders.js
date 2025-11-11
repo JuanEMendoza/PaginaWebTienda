@@ -69,24 +69,36 @@ function checkSession() {
     
     try {
         const session = JSON.parse(adminSession);
-        const now = new Date().getTime();
         
-        // Verificar si la sesión expiró (24 horas)
-        if (now > session.expiresAt) {
+        // Verificar que la sesión no haya expirado (24 horas)
+        // Compatible con ambas estructuras: timestamp o expiresAt
+        if (session.timestamp && Date.now() - session.timestamp > 24 * 60 * 60 * 1000) {
+            // Sesión expirada
+            localStorage.removeItem('adminSession');
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Verificar expiresAt si existe
+        if (session.expiresAt && Date.now() > session.expiresAt) {
             localStorage.removeItem('adminSession');
             window.location.href = 'index.html';
             return;
         }
         
         // Mostrar información del usuario
+        // Compatible con ambas estructuras: session.nombre o session.user.nombre
+        const nombre = session.nombre || (session.user && session.user.nombre) || 'Administrador';
+        const rol = session.rol || (session.user && session.user.rol) || 'Admin';
+        
         if (userNameElements.length > 0) {
             userNameElements.forEach(el => {
-                el.textContent = session.user.nombre || 'Administrador';
+                el.textContent = nombre;
             });
         }
         
         if (userRoleElement) {
-            userRoleElement.textContent = session.user.rol || 'Admin';
+            userRoleElement.textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
         }
         
     } catch (error) {
